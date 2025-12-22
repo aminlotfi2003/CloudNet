@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CloudNet.WebApp/CloudNet.WebApp.csproj" />
+    <Project Path="src/CloudNet.WebFramework/CloudNet.WebFramework.csproj" />
+  </Folder>
+</Solution>
