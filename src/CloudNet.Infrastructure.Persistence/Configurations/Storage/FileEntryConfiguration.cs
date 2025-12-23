@@ -27,7 +27,8 @@ public class FileEntryConfiguration : IEntityTypeConfiguration<FileEntry>
         builder.Property(x => x.Description)
             .HasMaxLength(2000);
 
-        builder.HasIndex(x => new { x.OwnerId, x.FolderId });
+        builder.HasIndex(x => new { x.OwnerId, x.FolderId })
+            .HasFilter("\"IsDeleted\" = false");
 
         builder.Property(x => x.IsDeleted)
             .HasDefaultValue(false);

@@ -1,6 +1,6 @@
 ﻿using CloudNet.Domain.Common;
 
-namespace CloudNet.Domain.Storage;
+namespace CloudNet.Domain.Identity;
 
 public class RefreshToken : EntityBase<Guid>
 {
