@@ -4,6 +4,8 @@ namespace CloudNet.Application.Common.Abstractions.Persistence.Repositories;
 
 public interface IRefreshTokenRepository
 {
+    Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default);
+
     Task<RefreshToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<RefreshToken?> GetByUserAndTokenHashAsync(
