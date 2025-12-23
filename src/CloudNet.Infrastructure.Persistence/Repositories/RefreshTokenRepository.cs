@@ -14,6 +14,11 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         _db = db;
     }
 
+    public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+        => _db.RefreshTokens
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.TokenHash == tokenHash, cancellationToken);
+
     public Task<RefreshToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => _db.RefreshTokens
             .AsNoTracking()

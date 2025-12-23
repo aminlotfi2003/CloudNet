@@ -1,4 +1,5 @@
 ﻿using CloudNet.Application;
+using CloudNet.Infrastructure.Identity;
 using CloudNet.Infrastructure.Persistence;
 
 namespace CloudNet.Api.Extensions.DependencyInjection;
@@ -16,6 +17,9 @@ public static class ServiceCollectionExtensions
 
         // Persistence
         services.AddPersistence(configuration);
+
+        // Identity
+        services.AddInfrastructureIdentity(configuration);
 
         // Versioning + Swagger
         services.AddCloudNetApiVersioning();

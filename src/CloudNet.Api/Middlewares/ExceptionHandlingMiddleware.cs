@@ -33,6 +33,7 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             ValidationException => (HttpStatusCode.BadRequest, "Validation failed"),
             NotFoundException => (HttpStatusCode.NotFound, "Not found"),
             ConflictException => (HttpStatusCode.Conflict, "Conflict"),
+            UnauthorizedException => (HttpStatusCode.Unauthorized, "Unauthorized"),
             _ => (HttpStatusCode.InternalServerError, "Server error")
         };
 
