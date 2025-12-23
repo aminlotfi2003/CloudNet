@@ -1,0 +1,6 @@
+@CloudNet.Api_HostAddress = http://localhost:5152
+
+GET {{CloudNet.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

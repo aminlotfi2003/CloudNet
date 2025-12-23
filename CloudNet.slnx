@@ -1,6 +1,10 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/CloudNet.WebApp/CloudNet.WebApp.csproj" />
-    <Project Path="src/CloudNet.WebFramework/CloudNet.WebFramework.csproj" />
+    <Project Path="src/CloudNet.Api/CloudNet.Api.csproj" Id="365d32b6-4811-43e0-b74f-38bb3312e3c7" />
+    <Project Path="src/CloudNet.Application/CloudNet.Application.csproj" Id="62202ac1-7593-49a4-9c8a-d3e74d6344ab" />
+    <Project Path="src/CloudNet.Domain/CloudNet.Domain.csproj" Id="41b7c727-c7e3-4d0e-b14c-962fd633a882" />
+    <Project Path="src/CloudNet.Infrastructure.Identity/CloudNet.Infrastructure.Identity.csproj" Id="06908544-42d5-4583-a3a7-38bfac881352" />
+    <Project Path="src/CloudNet.Infrastructure.Persistence/CloudNet.Infrastructure.Persistence.csproj" Id="acd639e7-c5c3-40c8-b884-00ce4262666d" />
+    <Project Path="src/CloudNet.Web/CloudNet.Web.csproj" Id="f8b77abc-44b6-4422-b543-7a1aa5cce295" />
   </Folder>
 </Solution>
