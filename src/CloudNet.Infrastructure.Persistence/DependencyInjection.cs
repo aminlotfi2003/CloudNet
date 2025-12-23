@@ -1,4 +1,9 @@
-﻿using CloudNet.Infrastructure.Persistence.Context;
+﻿using CloudNet.Application.Common.Abstractions.Clock;
+using CloudNet.Application.Common.Abstractions.Persistence.Repositories;
+using CloudNet.Application.Common.Abstractions.Persistence.UnitOfWork;
+using CloudNet.Infrastructure.Persistence.Clock;
+using CloudNet.Infrastructure.Persistence.Context;
+using CloudNet.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +21,19 @@ public static class DependencyInjection
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"));
         });
+
+        // UnitOfWork
+        services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+        // Repositories
+        services.AddScoped<IFolderRepository, FolderRepository>();
+        services.AddScoped<IFileEntryRepository, FileEntryRepository>();
+        services.AddScoped<IStorageQuotaRepository, StorageQuotaRepository>();
+        services.AddScoped<IShareLinkRepository, ShareLinkRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        // Clock
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
         return services;
     }

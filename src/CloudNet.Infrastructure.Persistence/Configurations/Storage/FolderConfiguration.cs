@@ -17,7 +17,8 @@ public class FolderConfiguration : IEntityTypeConfiguration<Folder>
             .HasMaxLength(120);
 
         builder.HasIndex(x => new { x.OwnerId, x.ParentId, x.Name })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"IsDeleted\" = false");
 
         builder.Property(x => x.IsDeleted)
             .HasDefaultValue(false);
