@@ -26,7 +26,7 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
             .SingleOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
     }
 
-    public async Task RevokeUserTokensAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task RevokeUserTokensAsync(Guid userId, DateTimeOffset revokedAt, CancellationToken cancellationToken = default)
     {
         var tokens = await _db.RefreshTokens
             .Where(t => t.UserId == userId && !t.IsRevoked)
@@ -34,7 +34,19 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
 
         foreach (var token in tokens)
         {
-            token.Revoke();
+            token.Revoke(revokedAt);
+        }
+    }
+
+    public async Task RevokeFamilyTokensAsync(Guid familyId, DateTimeOffset revokedAt, CancellationToken cancellationToken = default)
+    {
+        var tokens = await _db.RefreshTokens
+            .Where(t => t.FamilyId == familyId && !t.IsRevoked)
+            .ToListAsync(cancellationToken);
+
+        foreach (var token in tokens)
+        {
+            token.Revoke(revokedAt);
         }
     }
 }

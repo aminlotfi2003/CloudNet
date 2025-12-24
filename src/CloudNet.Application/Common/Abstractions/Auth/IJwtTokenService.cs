@@ -4,12 +4,10 @@ using System.Security.Claims;
 
 namespace CloudNet.Application.Common.Abstractions.Auth;
 
-public interface ITokenService
+public interface IJwtTokenService
 {
-    TokenPair GenerateTokenPair(
+    AccessTokenResult GenerateAccessToken(
         ApplicationUser user,
         IEnumerable<string> roles,
         IEnumerable<Claim>? additionalClaims = null);
-
-    string ComputeHash(string value);
 }

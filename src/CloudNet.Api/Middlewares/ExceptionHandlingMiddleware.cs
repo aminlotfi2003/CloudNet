@@ -34,6 +34,7 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             NotFoundException => (HttpStatusCode.NotFound, "Not found"),
             ConflictException => (HttpStatusCode.Conflict, "Conflict"),
             UnauthorizedException => (HttpStatusCode.Unauthorized, "Unauthorized"),
+            ForbiddenException => (HttpStatusCode.Forbidden, "Forbidden"),
             _ => (HttpStatusCode.InternalServerError, "Server error")
         };
 
