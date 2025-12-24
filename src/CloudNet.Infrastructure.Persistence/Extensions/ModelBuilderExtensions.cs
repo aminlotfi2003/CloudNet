@@ -1,7 +1,7 @@
 ﻿using CloudNet.Domain.Common;
-using CloudNet.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static CloudNet.Infrastructure.Persistence.Context.CloudNetDbContext;
 
 namespace CloudNet.Infrastructure.Persistence.Extensions;
 
@@ -19,19 +19,17 @@ public static class ModelBuilderExtensions
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
                 .MakeGenericMethod(type.ClrType);
 
-            method.Invoke(null, new object[] { modelBuilder });
+            method.Invoke(null, [modelBuilder]);
         }
     }
 
     public static void MapIdentityTables(this ModelBuilder builder)
     {
-        builder.Entity<ApplicationUser>().ToTable("Users");
-        builder.Entity<ApplicationRole>().ToTable("Roles");
-        builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
-        builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
-        builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
-        builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
-        builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+        builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles", CloudNetDbSchema.Identity);
+        builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims", CloudNetDbSchema.Identity);
+        builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins", CloudNetDbSchema.Identity);
+        builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims", CloudNetDbSchema.Identity);
+        builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens", CloudNetDbSchema.Identity);
     }
 
     private static void SetSoftDeleteFilter<TEntity>(ModelBuilder builder)

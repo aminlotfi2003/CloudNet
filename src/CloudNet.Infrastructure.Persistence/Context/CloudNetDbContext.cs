@@ -13,6 +13,12 @@ public class CloudNetDbContext : IdentityDbContext<ApplicationUser, ApplicationR
     {
     }
 
+    public static class CloudNetDbSchema
+    {
+        public const string Application = "app";
+        public const string Identity = "identity";
+    }
+
     // Storage
     public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<FileEntry> Files => Set<FileEntry>();
@@ -21,6 +27,8 @@ public class CloudNetDbContext : IdentityDbContext<ApplicationUser, ApplicationR
 
     // Identity
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordHistory> PasswordHistories => Set<PasswordHistory>();
+    public DbSet<LoginHistory> LoginHistories => Set<LoginHistory>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

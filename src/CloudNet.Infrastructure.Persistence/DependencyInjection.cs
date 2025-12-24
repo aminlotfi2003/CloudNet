@@ -31,6 +31,8 @@ public static class DependencyInjection
         services.AddScoped<IStorageQuotaRepository, StorageQuotaRepository>();
         services.AddScoped<IShareLinkRepository, ShareLinkRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordHistoryRepository, PasswordHistoryRepository>();
+        services.AddScoped<ILoginHistoryRepository, LoginHistoryRepository>();
 
         // Clock
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
