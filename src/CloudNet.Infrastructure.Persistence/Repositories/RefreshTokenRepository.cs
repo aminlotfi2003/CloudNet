@@ -14,38 +14,27 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         _db = db;
     }
 
-    public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
-        => _db.RefreshTokens
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.TokenHash == tokenHash, cancellationToken);
+    public async Task AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
+    {
+        await _db.RefreshTokens.AddAsync(token, cancellationToken);
+    }
 
-    public Task<RefreshToken?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => _db.RefreshTokens
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        return await _db.RefreshTokens
+            .Include(t => t.User)
+            .SingleOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
+    }
 
-    public Task<RefreshToken?> GetByUserAndTokenHashAsync(
-        Guid userId,
-        string tokenHash,
-        CancellationToken cancellationToken = default)
-        => _db.RefreshTokens
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.TokenHash == tokenHash, cancellationToken);
+    public async Task RevokeUserTokensAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var tokens = await _db.RefreshTokens
+            .Where(t => t.UserId == userId && !t.IsRevoked)
+            .ToListAsync(cancellationToken);
 
-    public Task<IReadOnlyList<RefreshToken>> ListValidByUserAsync(
-        Guid userId,
-        DateTimeOffset nowUtc,
-        CancellationToken cancellationToken = default)
-        => _db.RefreshTokens
-            .AsNoTracking()
-            .Where(x => x.UserId == userId && !x.IsRevoked && x.ExpiresAt > nowUtc)
-            .OrderByDescending(x => x.CreatedAt)
-            .ToListAsync(cancellationToken)
-            .ContinueWith(t => (IReadOnlyList<RefreshToken>)t.Result, cancellationToken);
-
-    public Task AddAsync(RefreshToken token, CancellationToken cancellationToken = default)
-        => _db.RefreshTokens.AddAsync(token, cancellationToken).AsTask();
-
-    public void Update(RefreshToken token)
-        => _db.RefreshTokens.Update(token);
+        foreach (var token in tokens)
+        {
+            token.Revoke();
+        }
+    }
 }
