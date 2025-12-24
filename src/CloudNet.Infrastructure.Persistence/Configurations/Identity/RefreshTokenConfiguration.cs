@@ -17,8 +17,19 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .IsRequired()
             .HasMaxLength(256);
 
+        builder.Property(x => x.FamilyId)
+            .IsRequired();
+
+        builder.Property(x => x.Device)
+            .HasMaxLength(256);
+
         builder.Property(x => x.IsRevoked)
             .HasDefaultValue(false);
+
+        builder.Property(x => x.RevokedAt);
+
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
 
         builder.HasOne(x => x.User)
             .WithMany(u => u.RefreshTokens)
@@ -26,6 +37,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder.HasIndex(x => x.ExpiresAt);
         builder.HasIndex(x => x.IsRevoked);
+        builder.HasIndex(x => x.FamilyId);
+        builder.HasIndex(x => x.ReplacedByTokenId);
 
         builder.HasIndex(x => new { x.UserId, x.TokenHash }).IsUnique();
     }
