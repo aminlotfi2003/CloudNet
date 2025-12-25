@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using CloudNet.Api.Abstractions.Contracts.Folders;
 using CloudNet.Api.Abstractions.Extensions;
+using CloudNet.Api.Abstractions.RateLimiting;
 using CloudNet.Application.Features.Folders.Commands.CreateFolder;
 using CloudNet.Application.Features.Folders.Commands.RestoreFolder;
 using CloudNet.Application.Features.Folders.Commands.SoftDeleteFolder;
@@ -10,12 +11,14 @@ using CloudNet.Application.Features.Folders.Queries.ListDeleted;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CloudNet.Api.Controllers.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
 [Authorize]
+[EnableRateLimiting(RateLimitingPolicyNames.PerUser)]
 [Route("api/v{version:apiVersion}/folders")]
 public sealed class FoldersController : ControllerBase
 {

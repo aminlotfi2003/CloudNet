@@ -6,7 +6,18 @@ public static class ClaimsPrincipalExtensions
 {
     public static Guid GetUserId(this ClaimsPrincipal user)
     {
+        return user.TryGetUserId(out var userId) ? userId : Guid.Empty;
+    }
+
+    public static bool TryGetUserId(this ClaimsPrincipal user, out Guid userId)
+    {
+        userId = default;
+
         var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        return Guid.TryParse(id, out var guid) ? guid : Guid.Empty;
+        if (!Guid.TryParse(id, out var parsed) || parsed == Guid.Empty)
+            return false;
+
+        userId = parsed;
+        return true;
     }
 }
