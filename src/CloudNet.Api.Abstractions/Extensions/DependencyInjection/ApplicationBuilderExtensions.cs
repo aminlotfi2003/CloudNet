@@ -15,6 +15,8 @@ public static class ApplicationBuilderExtensions
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseCloudNetRateLimiting();
+
         app.MapControllers();
 
         // Swagger after app build

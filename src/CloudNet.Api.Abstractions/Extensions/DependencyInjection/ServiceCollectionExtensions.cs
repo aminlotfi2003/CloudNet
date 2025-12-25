@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddControllers();
 
         services.AddCloudNetExceptionHandling();
+        services.AddCloudNetRateLimiting(configuration);
 
         // Application
         services.AddApplication();
