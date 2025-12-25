@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CloudNet.Api.Extensions;
+namespace CloudNet.Api.Abstractions.Extensions;
 
 public static class ApiVersioningExtensions
 {

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace CloudNet.Api.Security;
+namespace CloudNet.Api.Abstractions.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {

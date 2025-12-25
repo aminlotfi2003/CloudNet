@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
-using CloudNet.Api.Contracts.Files;
-using CloudNet.Api.Security;
+using CloudNet.Api.Abstractions.Contracts.Files;
+using CloudNet.Api.Abstractions.Extensions;
 using CloudNet.Application.Features.Files.Commands.CreateFile;
 using CloudNet.Application.Features.Files.Commands.RestoreFile;
 using CloudNet.Application.Features.Files.Commands.SoftDeleteFile;

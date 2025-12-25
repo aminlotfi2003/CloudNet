@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/CloudNet.Api.Abstractions/CloudNet.Api.Abstractions.csproj" Id="003a3116-3a74-4d50-984c-431edd48b1eb" />
     <Project Path="src/CloudNet.Api/CloudNet.Api.csproj" Id="365d32b6-4811-43e0-b74f-38bb3312e3c7" />
     <Project Path="src/CloudNet.Application/CloudNet.Application.csproj" Id="62202ac1-7593-49a4-9c8a-d3e74d6344ab" />
     <Project Path="src/CloudNet.Domain/CloudNet.Domain.csproj" Id="41b7c727-c7e3-4d0e-b14c-962fd633a882" />

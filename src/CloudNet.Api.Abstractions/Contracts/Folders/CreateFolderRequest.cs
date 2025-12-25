@@ -1,4 +1,4 @@
-﻿namespace CloudNet.Api.Contracts.Folders;
+﻿namespace CloudNet.Api.Abstractions.Contracts.Folders;
 
 public sealed class CreateFolderRequest
 {

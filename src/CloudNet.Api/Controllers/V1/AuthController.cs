@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
-using CloudNet.Api.Contracts.Auth;
-using CloudNet.Api.Security;
+using CloudNet.Api.Abstractions.Contracts.Auth;
+using CloudNet.Api.Abstractions.Extensions;
 using CloudNet.Application.Features.Auth.Commands.Login;
 using CloudNet.Application.Features.Auth.Commands.Logout;
 using CloudNet.Application.Features.Auth.Commands.Refresh;
