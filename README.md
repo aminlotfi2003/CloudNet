@@ -122,5 +122,5 @@ Environment variables can override any configuration key using standard ASP.NET 
 - Frontend integration in `CloudNet.Web`
 
 ## 11) License / Contribution
-- **License**: TBD
+- **License**: This project is licensed under the MIT License.
 - **Contributions**: PRs are welcome. Please open an issue to discuss major changes.
