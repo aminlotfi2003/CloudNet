@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CloudNet.Api.Abstractions/CloudNet.Api.Abstractions.csproj" Id="003a3116-3a74-4d50-984c-431edd48b1eb" />
     <Project Path="src/CloudNet.Api/CloudNet.Api.csproj" Id="365d32b6-4811-43e0-b74f-38bb3312e3c7" />
