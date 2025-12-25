@@ -1,4 +1,4 @@
-﻿namespace CloudNet.Api.Contracts.Files;
+﻿namespace CloudNet.Api.Abstractions.Contracts.Files;
 
 public sealed class CreateFileEntryRequest
 {

@@ -1,9 +1,11 @@
 ﻿using CloudNet.Application.Common.Exceptions;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using System.Net;
 
-namespace CloudNet.Api.Middlewares;
+namespace CloudNet.Api.Abstractions.Middlewares;
 
 public sealed class ExceptionHandlingMiddleware : IMiddleware
 {

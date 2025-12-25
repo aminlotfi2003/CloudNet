@@ -1,8 +1,10 @@
 ﻿using CloudNet.Application;
 using CloudNet.Infrastructure.Identity;
 using CloudNet.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CloudNet.Api.Extensions.DependencyInjection;
+namespace CloudNet.Api.Abstractions.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

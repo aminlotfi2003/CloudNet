@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.OAuth;
-
-namespace CloudNet.Api.Contracts.Auth;
+﻿namespace CloudNet.Api.Abstractions.Contracts.Auth;
 
 public sealed class AuthResponse
 {

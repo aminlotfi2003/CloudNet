@@ -1,8 +1,11 @@
 ﻿using Asp.Versioning.ApiExplorer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
+//using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace CloudNet.Api.Extensions;
+namespace CloudNet.Api.Abstractions.Extensions;
 
 public static class SwaggerExtensions
 {

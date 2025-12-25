@@ -1,4 +1,4 @@
-using CloudNet.Api.Extensions.DependencyInjection;
+using CloudNet.Api.Abstractions.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 

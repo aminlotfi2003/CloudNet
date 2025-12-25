@@ -1,6 +1,8 @@
-﻿using CloudNet.Api.Middlewares;
+﻿using CloudNet.Api.Abstractions.Middlewares;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace CloudNet.Api.Extensions;
+namespace CloudNet.Api.Abstractions.Extensions;
 
 public static class ExceptionHandlingExtensions
 {

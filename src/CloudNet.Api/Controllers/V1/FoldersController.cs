@@ -1,6 +1,6 @@
 ﻿using Asp.Versioning;
-using CloudNet.Api.Contracts.Folders;
-using CloudNet.Api.Security;
+using CloudNet.Api.Abstractions.Contracts.Folders;
+using CloudNet.Api.Abstractions.Extensions;
 using CloudNet.Application.Features.Folders.Commands.CreateFolder;
 using CloudNet.Application.Features.Folders.Commands.RestoreFolder;
 using CloudNet.Application.Features.Folders.Commands.SoftDeleteFolder;

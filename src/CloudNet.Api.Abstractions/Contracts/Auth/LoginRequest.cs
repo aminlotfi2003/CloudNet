@@ -1,4 +1,4 @@
-﻿namespace CloudNet.Api.Contracts.Auth;
+﻿namespace CloudNet.Api.Abstractions.Contracts.Auth;
 
 public sealed class LoginRequest
 {

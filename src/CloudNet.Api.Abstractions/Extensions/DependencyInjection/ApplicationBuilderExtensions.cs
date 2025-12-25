@@ -1,4 +1,6 @@
-﻿namespace CloudNet.Api.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+
+namespace CloudNet.Api.Abstractions.Extensions.DependencyInjection;
 
 public static class ApplicationBuilderExtensions
 {
