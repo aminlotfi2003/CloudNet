@@ -5,6 +5,7 @@ using CloudNet.Api.Abstractions.RateLimiting;
 using CloudNet.Application.Features.Folders.Commands.CreateFolder;
 using CloudNet.Application.Features.Folders.Commands.RestoreFolder;
 using CloudNet.Application.Features.Folders.Commands.SoftDeleteFolder;
+using CloudNet.Application.Features.Folders.Commands.UpdateFolder;
 using CloudNet.Application.Features.Folders.Dtos;
 using CloudNet.Application.Features.Folders.Queries.ListChildren;
 using CloudNet.Application.Features.Folders.Queries.ListDeleted;
@@ -44,6 +45,26 @@ public sealed class FoldersController : ControllerBase
         };
 
         var result = await _mediator.Send(new CreateFolderCommand(dto), ct);
+        return Ok(result);
+    }
+
+    [HttpPut("{folderId:guid}")]
+    public async Task<ActionResult<FolderDto>> Update(
+        [FromRoute] Guid folderId,
+        [FromBody] UpdateFolderRequest request,
+        CancellationToken ct)
+    {
+        var ownerId = User.GetUserId();
+        if (ownerId == Guid.Empty) return Unauthorized();
+
+        var dto = new UpdateFolderDto
+        {
+            FolderId = folderId,
+            OwnerId = ownerId,
+            Name = request.Name
+        };
+
+        var result = await _mediator.Send(new UpdateFolderCommand(dto), ct);
         return Ok(result);
     }
 

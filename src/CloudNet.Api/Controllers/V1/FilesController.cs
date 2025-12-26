@@ -5,6 +5,7 @@ using CloudNet.Api.Abstractions.RateLimiting;
 using CloudNet.Application.Features.Files.Commands.CreateFile;
 using CloudNet.Application.Features.Files.Commands.RestoreFile;
 using CloudNet.Application.Features.Files.Commands.SoftDeleteFile;
+using CloudNet.Application.Features.Files.Commands.UpdateFile;
 using CloudNet.Application.Features.Files.Dtos;
 using CloudNet.Application.Features.Files.Queries.ListByFolder;
 using CloudNet.Application.Features.Files.Queries.ListDeleted;
@@ -47,6 +48,27 @@ public sealed class FilesController : ControllerBase
         };
 
         var result = await _mediator.Send(new CreateFileEntryCommand(dto), ct);
+        return Ok(result);
+    }
+
+    [HttpPatch("{fileId:guid}")]
+    public async Task<ActionResult<FileEntryDto>> Update(
+        [FromRoute] Guid fileId,
+        [FromBody] UpdateFileEntryRequest request,
+        CancellationToken ct)
+    {
+        var ownerId = User.GetUserId();
+        if (ownerId == Guid.Empty) return Unauthorized();
+
+        var dto = new UpdateFileEntryDto
+        {
+            FileId = fileId,
+            OwnerId = ownerId,
+            FileName = request.FileName,
+            Description = request.Description
+        };
+
+        var result = await _mediator.Send(new UpdateFileEntryCommand(dto), ct);
         return Ok(result);
     }
 
