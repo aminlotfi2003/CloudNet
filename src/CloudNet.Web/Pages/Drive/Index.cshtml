@@ -1,0 +1,221 @@
+﻿@page
+@model CloudNet.Web.Pages.Drive.IndexModel
+@{
+    ViewData["Title"] = "Drive";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ShareToken))
+{
+    <div class="alert alert-success d-flex flex-column flex-md-row justify-content-between align-items-md-center" role="alert">
+        <div>
+            <strong>Share link created for @(string.IsNullOrWhiteSpace(Model.ShareFileName) ? "file" : Model.ShareFileName).</strong>
+            <div class="mt-1">Token: <span class="fw-semibold" id="share-token">@Model.ShareToken</span></div>
+            <div class="mt-1">
+                Shared download:
+                <a href="@($"{Model.ApiBaseUrl}/api/v1/shared-files/{Model.ShareToken}/download")" target="_blank" rel="noopener">
+                    @($"{Model.ApiBaseUrl}/api/v1/shared-files/{Model.ShareToken}/download")
+                </a>
+            </div>
+            <div class="small text-muted">Save this token now. It will only be shown once.</div>
+        </div>
+        <button class="btn btn-sm btn-outline-success mt-2 mt-md-0" type="button" data-copy-target="share-token">Copy token</button>
+    </div>
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        @foreach (var crumb in Model.Breadcrumbs)
+        {
+            var isActive = crumb.Equals(Model.Breadcrumbs.Last());
+            <li class="breadcrumb-item @(isActive ? "active" : null)">
+                @if (isActive)
+                {
+                    @crumb.Name
+                }
+                else
+                {
+                    <a asp-page="/Drive/Index" asp-route-folderId="@crumb.FolderId" asp-route-path="@crumb.Path">@crumb.Name</a>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Create folder</h2>
+                <form method="post" asp-page-handler="CreateFolder">
+                    <input type="hidden" name="Path" value="@Model.Path" />
+                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                    <div class="mb-3">
+                        <label asp-for="CreateFolder.Name" class="form-label"></label>
+                        <input asp-for="CreateFolder.Name" class="form-control" />
+                        <span asp-validation-for="CreateFolder.Name" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary w-100">Create</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Upload file</h2>
+                <form method="post" asp-page-handler="UploadFile" enctype="multipart/form-data" data-upload-form>
+                    <input type="hidden" name="Path" value="@Model.Path" />
+                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+                    <div class="mb-3">
+                        <label asp-for="UploadFile.File" class="form-label"></label>
+                        <input asp-for="UploadFile.File" type="file" class="form-control" />
+                        <span asp-validation-for="UploadFile.File" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="UploadFile.Description" class="form-label">Description (optional)</label>
+                        <input asp-for="UploadFile.Description" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" data-upload-button>Upload</button>
+                    <div class="text-muted small mt-2" data-upload-status></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Folders</h2>
+                @if (!Model.Folders.Any())
+                {
+                    <p class="text-muted">No folders here yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Modified</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var folder in Model.Folders)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a class="fw-semibold" asp-page="/Drive/Index" asp-route-folderId="@folder.Id" asp-route-path="@Model.BuildChildPath(folder.Id, folder.Name)">
+                                                @folder.Name
+                                            </a>
+                                        </td>
+                                        <td>@(folder.ModifiedAt?.ToLocalTime().ToString("g") ?? folder.CreatedAt.ToLocalTime().ToString("g"))</td>
+                                        <td class="text-end">
+                                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                                <form method="post" asp-page-handler="RenameFolder" class="d-flex gap-2">
+                                                    <input type="hidden" name="folderId" value="@folder.Id" />
+                                                    <input type="hidden" name="Path" value="@Model.Path" />
+                                                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                                                    <input type="text" name="name" value="@folder.Name" class="form-control form-control-sm" />
+                                                    <button class="btn btn-sm btn-outline-secondary" type="submit">Rename</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="DeleteFolder" onsubmit="return confirm('Delete this folder?');">
+                                                    <input type="hidden" name="folderId" value="@folder.Id" />
+                                                    <input type="hidden" name="Path" value="@Model.Path" />
+                                                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Files</h2>
+                @if (!Model.FolderId.HasValue)
+                {
+                    <p class="text-muted">Select a folder to see files.</p>
+                }
+                else if (!Model.Files.Any())
+                {
+                    <p class="text-muted">No files in this folder yet.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Size</th>
+                                    <th>Modified</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var file in Model.Files)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@file.FileName</td>
+                                        <td>@file.Description</td>
+                                        <td>@(file.SizeBytes / 1024) KB</td>
+                                        <td>@(file.ModifiedAt?.ToLocalTime().ToString("g") ?? file.CreatedAt.ToLocalTime().ToString("g"))</td>
+                                        <td class="text-end">
+                                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   asp-page-handler="Download"
+                                                   asp-route-fileId="@file.Id"
+                                                   asp-route-folderId="@Model.FolderId"
+                                                   asp-route-path="@Model.Path">Download</a>
+                                                <form method="post" asp-page-handler="UpdateFile" class="d-flex gap-2">
+                                                    <input type="hidden" name="fileId" value="@file.Id" />
+                                                    <input type="hidden" name="Path" value="@Model.Path" />
+                                                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                                                    <input type="text" name="fileName" value="@file.FileName" class="form-control form-control-sm" />
+                                                    <input type="text" name="description" value="@file.Description" class="form-control form-control-sm" placeholder="Description" />
+                                                    <button class="btn btn-sm btn-outline-secondary" type="submit">Save</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="DeleteFile" onsubmit="return confirm('Delete this file?');">
+                                                    <input type="hidden" name="fileId" value="@file.Id" />
+                                                    <input type="hidden" name="Path" value="@Model.Path" />
+                                                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                                                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="Share">
+                                                    <input type="hidden" name="fileId" value="@file.Id" />
+                                                    <input type="hidden" name="fileName" value="@file.FileName" />
+                                                    <input type="hidden" name="Path" value="@Model.Path" />
+                                                    <input type="hidden" name="FolderId" value="@Model.FolderId" />
+                                                    <button class="btn btn-sm btn-outline-success" type="submit">Share</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,4 +1,34 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿(() => {
+    const uploadForms = document.querySelectorAll('[data-upload-form]');
+    uploadForms.forEach((form) => {
+        form.addEventListener('submit', () => {
+            const button = form.querySelector('[data-upload-button]');
+            const status = form.querySelector('[data-upload-status]');
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Uploading...';
+            }
+            if (status) {
+                status.textContent = 'Uploading file. Please wait.';
+            }
+        });
+    });
 
-// Write your JavaScript code.
+    document.querySelectorAll('[data-copy-target]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const targetId = button.getAttribute('data-copy-target');
+            const target = targetId ? document.getElementById(targetId) : null;
+            if (!target) {
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(target.textContent ?? '');
+                button.textContent = 'Copied!';
+                setTimeout(() => (button.textContent = 'Copy token'), 1500);
+            } catch {
+                button.textContent = 'Copy failed';
+            }
+        });
+    });
+})();
