@@ -18,6 +18,13 @@ public sealed class RateLimitingOptions
         QueueLimit = 0
     };
 
+    public RateLimitPolicyOptions ShareDownload { get; init; } = new()
+    {
+        PermitLimit = 30,
+        WindowSeconds = 60,
+        QueueLimit = 0
+    };
+
     public RateLimitPolicyOptions InvalidUser { get; init; } = new()
     {
         PermitLimit = 5,

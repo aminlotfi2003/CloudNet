@@ -1,9 +1,12 @@
 ﻿using CloudNet.Application.Common.Abstractions.Clock;
 using CloudNet.Application.Common.Abstractions.Persistence.Repositories;
 using CloudNet.Application.Common.Abstractions.Persistence.UnitOfWork;
+using CloudNet.Application.Common.Abstractions.Storage;
 using CloudNet.Infrastructure.Persistence.Clock;
 using CloudNet.Infrastructure.Persistence.Context;
+using CloudNet.Infrastructure.Persistence.Options;
 using CloudNet.Infrastructure.Persistence.Repositories;
+using CloudNet.Infrastructure.Persistence.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +39,16 @@ public static class DependencyInjection
 
         // Clock
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
+        // Storage
+        services.AddOptions<FileStorageOptions>()
+             .Bind(configuration.GetSection(FileStorageOptions.SectionName));
+
+        services.AddOptions<StorageQuotaOptions>()
+            .Bind(configuration.GetSection(StorageQuotaOptions.SectionName));
+
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
+        services.AddSingleton<IStorageQuotaSettings, StorageQuotaSettings>();
 
         return services;
     }

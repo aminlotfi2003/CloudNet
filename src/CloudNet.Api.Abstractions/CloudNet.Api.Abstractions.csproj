@@ -7,6 +7,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\CloudNet.Infrastructure.Identity\CloudNet.Infrastructure.Identity.csproj" />
 	</ItemGroup>
 

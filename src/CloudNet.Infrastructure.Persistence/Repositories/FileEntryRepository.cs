@@ -83,6 +83,17 @@ public sealed class FileEntryRepository : IFileEntryRepository
         };
     }
 
+    public async Task<long> GetTotalSizeByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default)
+    {
+        var total = await _db.Files
+            .AsNoTracking()
+            .Where(x => x.OwnerId == ownerId)
+            .Select(x => (long?)x.SizeBytes)
+            .SumAsync(cancellationToken);
+
+        return total ?? 0;
+    }
+
     public Task AddAsync(FileEntry file, CancellationToken cancellationToken = default)
         => _db.Files.AddAsync(file, cancellationToken).AsTask();
 
