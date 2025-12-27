@@ -24,6 +24,8 @@ public interface IFileEntryRepository
         PageRequest page,
         CancellationToken cancellationToken = default);
 
+    Task<long> GetTotalSizeByOwnerAsync(Guid ownerId, CancellationToken cancellationToken = default);
+
     Task AddAsync(FileEntry file, CancellationToken cancellationToken = default);
 
     void Update(FileEntry file);

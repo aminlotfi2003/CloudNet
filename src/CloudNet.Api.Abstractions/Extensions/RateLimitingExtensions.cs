@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -126,6 +127,31 @@ public static class RateLimitingExtensions
                         PermitLimit = settings.AuthSensitive.PermitLimit,
                         Window = TimeSpan.FromSeconds(settings.AuthSensitive.WindowSeconds),
                         QueueLimit = settings.AuthSensitive.QueueLimit,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        AutoReplenishment = true
+                    });
+            });
+
+            options.AddPolicy(RateLimitingPolicyNames.ShareDownload, httpContext =>
+            {
+                var settings = httpContext.RequestServices
+                    .GetRequiredService<IOptions<RateLimitingOptions>>()
+                    .Value;
+
+                var token = httpContext.GetRouteValue("token")?.ToString();
+                var partitionKey = !string.IsNullOrWhiteSpace(token)
+                    ? $"share:{token}"
+                    : GetRemoteIpPartitionKey(httpContext, "share");
+
+                httpContext.Items[RateLimitingConstants.PartitionKeyItemName] = partitionKey;
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = settings.ShareDownload.PermitLimit,
+                        Window = TimeSpan.FromSeconds(settings.ShareDownload.WindowSeconds),
+                        QueueLimit = settings.ShareDownload.QueueLimit,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         AutoReplenishment = true
                     });
