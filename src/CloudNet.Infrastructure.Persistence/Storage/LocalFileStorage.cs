@@ -20,6 +20,7 @@ public sealed class LocalFileStorage : IFileStorage
             : Path.Combine(environment.ContentRootPath, configuredPath);
 
         _rootPath = Path.GetFullPath(basePath);
+        _rootPath = _rootPath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         Directory.CreateDirectory(_rootPath);
     }
 
@@ -78,7 +79,11 @@ public sealed class LocalFileStorage : IFileStorage
         var combined = Path.Combine(_rootPath, normalizedKey);
         var fullPath = Path.GetFullPath(combined);
 
-        if (!fullPath.StartsWith(_rootPath, StringComparison.Ordinal))
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        if (!fullPath.StartsWith(_rootPath, comparison))
             throw new InvalidOperationException("Invalid storage key.");
 
         return fullPath;
