@@ -1,6 +1,7 @@
 ﻿using CloudNet.Application.Common.Abstractions.Storage;
 using CloudNet.Infrastructure.Persistence.Options;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace CloudNet.Infrastructure.Persistence.Storage;
@@ -8,9 +9,14 @@ namespace CloudNet.Infrastructure.Persistence.Storage;
 public sealed class LocalFileStorage : IFileStorage
 {
     private readonly string _rootPath;
+    private readonly ILogger<LocalFileStorage> _logger;
 
-    public LocalFileStorage(IOptions<FileStorageOptions> options, IHostEnvironment environment)
+    public LocalFileStorage(
+        IOptions<FileStorageOptions> options, 
+        IHostEnvironment environment,
+        ILogger<LocalFileStorage> logger)
     {
+        _logger = logger;
         var configuredPath = options.Value.RootPath;
         if (string.IsNullOrWhiteSpace(configuredPath))
             throw new InvalidOperationException("File storage root path is not configured.");
@@ -40,6 +46,8 @@ public sealed class LocalFileStorage : IFileStorage
             FileOptions.Asynchronous);
 
         await content.CopyToAsync(output, cancellationToken);
+
+        _logger.LogInformation("Stored file content for {StorageKey}", storageKey);
     }
 
     public Task<Stream> OpenReadAsync(string storageKey, CancellationToken cancellationToken = default)
@@ -53,6 +61,7 @@ public sealed class LocalFileStorage : IFileStorage
             81920,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 
+        _logger.LogDebug("Opened file content for {StorageKey}", storageKey);
         return Task.FromResult(stream);
     }
 
@@ -62,6 +71,11 @@ public sealed class LocalFileStorage : IFileStorage
         if (File.Exists(fullPath))
         {
             File.Delete(fullPath);
+            _logger.LogInformation("Deleted file content for {StorageKey}", storageKey);
+        }
+        else
+        {
+            _logger.LogDebug("Delete skipped, file not found for {StorageKey}", storageKey);
         }
 
         return Task.CompletedTask;
@@ -70,7 +84,9 @@ public sealed class LocalFileStorage : IFileStorage
     public Task<bool> ExistsAsync(string storageKey, CancellationToken cancellationToken = default)
     {
         var fullPath = GetFullPath(storageKey);
-        return Task.FromResult(File.Exists(fullPath));
+        var exists = File.Exists(fullPath);
+        _logger.LogDebug("Checked file exists for {StorageKey}: {Exists}", storageKey, exists);
+        return Task.FromResult(exists);
     }
 
     private string GetFullPath(string storageKey)

@@ -10,11 +10,14 @@ public static class ApplicationBuilderExtensions
         if (!app.Environment.IsDevelopment())
             app.UseHttpsRedirection();
 
+        app.UseCorrelationId();
+        app.UseAppRequestLogging();
         app.UseCloudNetExceptionHandling();
 
         app.UseRouting();
 
         app.UseAuthentication();
+        app.UseCloudNetUserIdEnrichment();
         app.UseAuthorization();
 
         app.UseCloudNetRateLimiting();

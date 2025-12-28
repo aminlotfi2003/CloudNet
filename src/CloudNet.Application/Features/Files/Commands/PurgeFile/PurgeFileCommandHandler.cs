@@ -5,6 +5,7 @@ using CloudNet.Application.Common.Abstractions.Storage;
 using CloudNet.Application.Common.Exceptions;
 using CloudNet.Domain.Storage;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Files.Commands.PurgeFile;
 
@@ -16,6 +17,7 @@ public sealed class PurgeFileCommandHandler : IRequestHandler<PurgeFileCommand>
     private readonly IUnitOfWork _uow;
     private readonly IDateTimeProvider _clock;
     private readonly IStorageQuotaSettings _quotaSettings;
+    private readonly ILogger<PurgeFileCommandHandler> _logger;
 
     public PurgeFileCommandHandler(
         IFileEntryRepository files,
@@ -23,7 +25,8 @@ public sealed class PurgeFileCommandHandler : IRequestHandler<PurgeFileCommand>
         IFileStorage storage,
         IUnitOfWork uow,
         IDateTimeProvider clock,
-        IStorageQuotaSettings quotaSettings)
+        IStorageQuotaSettings quotaSettings,
+        ILogger<PurgeFileCommandHandler> logger)
     {
         _files = files;
         _quotas = quotas;
@@ -31,6 +34,7 @@ public sealed class PurgeFileCommandHandler : IRequestHandler<PurgeFileCommand>
         _uow = uow;
         _clock = clock;
         _quotaSettings = quotaSettings;
+        _logger = logger;
     }
 
     public async Task Handle(PurgeFileCommand request, CancellationToken cancellationToken)
@@ -54,6 +58,13 @@ public sealed class PurgeFileCommandHandler : IRequestHandler<PurgeFileCommand>
         await _uow.SaveChangesAsync(cancellationToken);
 
         await _storage.DeleteAsync(file.StoragePath, cancellationToken);
+
+        _logger.LogInformation(
+            "PurgeCompleted for owner {OwnerId} file {FileId} size {SizeBytes} storageKey {StorageKey}",
+            file.OwnerId,
+            file.Id,
+            file.SizeBytes,
+            file.StoragePath);
     }
 
     private async Task<(StorageQuota quota, bool isNew)> EnsureQuotaAsync(

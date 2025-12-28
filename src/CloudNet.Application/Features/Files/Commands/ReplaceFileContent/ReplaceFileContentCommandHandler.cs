@@ -7,6 +7,7 @@ using CloudNet.Application.Common.Exceptions;
 using CloudNet.Application.Features.Files.Dtos;
 using CloudNet.Domain.Storage;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Files.Commands.ReplaceFileContent;
 
@@ -19,6 +20,7 @@ public sealed class ReplaceFileContentCommandHandler : IRequestHandler<ReplaceFi
     private readonly IMapper _mapper;
     private readonly IDateTimeProvider _clock;
     private readonly IStorageQuotaSettings _quotaSettings;
+    private readonly ILogger<ReplaceFileContentCommandHandler> _logger;
 
     public ReplaceFileContentCommandHandler(
         IFileEntryRepository files,
@@ -27,7 +29,8 @@ public sealed class ReplaceFileContentCommandHandler : IRequestHandler<ReplaceFi
         IUnitOfWork uow,
         IMapper mapper,
         IDateTimeProvider clock,
-        IStorageQuotaSettings quotaSettings)
+        IStorageQuotaSettings quotaSettings,
+        ILogger<ReplaceFileContentCommandHandler> logger)
     {
         _files = files;
         _quotas = quotas;
@@ -36,6 +39,7 @@ public sealed class ReplaceFileContentCommandHandler : IRequestHandler<ReplaceFi
         _mapper = mapper;
         _clock = clock;
         _quotaSettings = quotaSettings;
+        _logger = logger;
     }
 
     public async Task<FileEntryDto> Handle(ReplaceFileContentCommand request, CancellationToken cancellationToken)
@@ -78,6 +82,13 @@ public sealed class ReplaceFileContentCommandHandler : IRequestHandler<ReplaceFi
         }
 
         await _storage.DeleteAsync(oldStorageKey, cancellationToken);
+
+        _logger.LogInformation(
+            "ReplaceCompleted for owner {OwnerId} file {FileId} size {SizeBytes} storageKey {StorageKey}",
+            file.OwnerId,
+            file.Id,
+            file.SizeBytes,
+            file.StoragePath);
 
         return _mapper.Map<FileEntryDto>(file);
     }
