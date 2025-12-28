@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         // MediatR Pipeline Behaviors (Pipeline Behaviors in Application.Common.Behaviors)
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;

@@ -7,6 +7,7 @@ using CloudNet.Application.Features.Auth.Dtos;
 using CloudNet.Domain.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Auth.Commands.Login;
 
@@ -19,6 +20,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
     private readonly IRefreshTokenRepository _refreshTokens;
     private readonly IUnitOfWork _uow;
     private readonly IDateTimeProvider _clock;
+    private readonly ILogger<LoginCommandHandler> _logger;
 
     public LoginCommandHandler(
         UserManager<ApplicationUser> userManager,
@@ -27,7 +29,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         IRefreshTokenService refreshTokenService,
         IRefreshTokenRepository refreshTokens,
         IUnitOfWork uow,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        ILogger<LoginCommandHandler> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -36,6 +39,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         _refreshTokens = refreshTokens;
         _uow = uow;
         _clock = clock;
+        _logger = logger;
     }
 
     public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -43,27 +47,32 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         var user = await FindByIdentifierAsync(request.Identifier);
         if (user is null)
         {
+            _logger.LogWarning("Login failed for identifier {Identifier}", request.Identifier);
             throw new UnauthorizedException("Invalid credentials.");
         }
 
         if (!user.IsActive)
         {
+            _logger.LogWarning("Login blocked for inactive user {UserId}", user.Id);
             throw new ForbiddenException("User is inactive.");
         }
 
         var signIn = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (signIn.IsLockedOut)
         {
+            _logger.LogWarning("Login locked out for user {UserId}", user.Id);
             throw new ForbiddenException("User is locked out.");
         }
 
         if (signIn.IsNotAllowed)
         {
+            _logger.LogWarning("Login not allowed for user {UserId}", user.Id);
             throw new ForbiddenException("User is not allowed to sign in.");
         }
 
         if (!signIn.Succeeded)
         {
+            _logger.LogWarning("Login failed for user {UserId}", user.Id);
             throw new UnauthorizedException("Invalid credentials.");
         }
 
@@ -83,6 +92,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
 
         await _refreshTokens.AddAsync(refreshEntity, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Login succeeded for user {UserId}", user.Id);
 
         return new AuthResponseDto(
             new AuthUserDto(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty),

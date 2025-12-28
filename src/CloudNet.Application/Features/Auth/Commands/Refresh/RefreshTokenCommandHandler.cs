@@ -7,6 +7,7 @@ using CloudNet.Application.Features.Auth.Dtos;
 using CloudNet.Domain.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Auth.Commands.Refresh;
 
@@ -19,6 +20,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     private readonly IRefreshTokenRepository _refreshTokens;
     private readonly IUnitOfWork _uow;
     private readonly IDateTimeProvider _clock;
+    private readonly ILogger<RefreshTokenCommandHandler> _logger;
 
     public RefreshTokenCommandHandler(
         UserManager<ApplicationUser> userManager,
@@ -27,7 +29,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IRefreshTokenSettings refreshTokenSettings,
         IRefreshTokenRepository refreshTokens,
         IUnitOfWork uow,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        ILogger<RefreshTokenCommandHandler> logger)
     {
         _userManager = userManager;
         _jwtTokenService = jwtTokenService;
@@ -36,6 +39,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _refreshTokens = refreshTokens;
         _uow = uow;
         _clock = clock;
+        _logger = logger;
     }
 
     public async Task<AuthTokensDto> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -45,6 +49,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         if (storedToken is null)
         {
+            _logger.LogWarning("Refresh token rejected: token not found");
             throw new UnauthorizedException("Refresh token is invalid.");
         }
 
@@ -53,6 +58,10 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         {
             if (storedToken.IsRevoked && storedToken.ReplacedByTokenId.HasValue)
             {
+                _logger.LogWarning(
+                    "Refresh token reuse detected for user {UserId} family {FamilyId}",
+                    storedToken.UserId,
+                    storedToken.FamilyId);
                 if (_refreshTokenSettings.RevokeAllTokensOnReuse)
                 {
                     await _refreshTokens.RevokeUserTokensAsync(storedToken.UserId, now, cancellationToken);
@@ -87,6 +96,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
         await _refreshTokens.AddAsync(newToken, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Refresh token issued for user {UserId}", user.Id);
 
         return new AuthTokensDto(
             access.AccessToken,

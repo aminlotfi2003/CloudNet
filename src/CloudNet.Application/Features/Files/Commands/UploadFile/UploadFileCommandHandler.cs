@@ -7,6 +7,7 @@ using CloudNet.Application.Common.Exceptions;
 using CloudNet.Application.Features.Files.Dtos;
 using CloudNet.Domain.Storage;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Files.Commands.UploadFile;
 
@@ -19,6 +20,7 @@ public sealed class UploadFileCommandHandler : IRequestHandler<UploadFileCommand
     private readonly IMapper _mapper;
     private readonly IDateTimeProvider _clock;
     private readonly IStorageQuotaSettings _quotaSettings;
+    private readonly ILogger<UploadFileCommandHandler> _logger;
 
     public UploadFileCommandHandler(
         IFileEntryRepository files,
@@ -27,7 +29,8 @@ public sealed class UploadFileCommandHandler : IRequestHandler<UploadFileCommand
         IUnitOfWork uow,
         IMapper mapper,
         IDateTimeProvider clock,
-        IStorageQuotaSettings quotaSettings)
+        IStorageQuotaSettings quotaSettings,
+        ILogger<UploadFileCommandHandler> logger)
     {
         _files = files;
         _quotas = quotas;
@@ -36,10 +39,17 @@ public sealed class UploadFileCommandHandler : IRequestHandler<UploadFileCommand
         _mapper = mapper;
         _clock = clock;
         _quotaSettings = quotaSettings;
+        _logger = logger;
     }
 
     public async Task<FileEntryDto> Handle(UploadFileCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation(
+            "UploadStarted for owner {OwnerId} in folder {FolderId} size {SizeBytes}",
+            request.OwnerId,
+            request.FolderId,
+            request.SizeBytes);
+
         var (quota, isNewQuota) = await EnsureQuotaAsync(request.OwnerId, cancellationToken);
 
         var projectedUsage = quota.UsedBytes + request.SizeBytes;
@@ -81,6 +91,14 @@ public sealed class UploadFileCommandHandler : IRequestHandler<UploadFileCommand
             await _storage.DeleteAsync(storageKey, cancellationToken);
             throw;
         }
+
+        _logger.LogInformation(
+            "UploadCompleted for owner {OwnerId} file {FileId} folder {FolderId} size {SizeBytes} storageKey {StorageKey}",
+            file.OwnerId,
+            file.Id,
+            file.FolderId,
+            file.SizeBytes,
+            file.StoragePath);
 
         return _mapper.Map<FileEntryDto>(file);
     }

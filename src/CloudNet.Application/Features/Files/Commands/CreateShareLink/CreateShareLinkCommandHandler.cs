@@ -6,6 +6,7 @@ using CloudNet.Application.Features.Files.Dtos;
 using CloudNet.Domain.Enums;
 using CloudNet.Domain.Storage;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,17 +18,20 @@ public sealed class CreateShareLinkCommandHandler : IRequestHandler<CreateShareL
     private readonly IShareLinkRepository _links;
     private readonly IUnitOfWork _uow;
     private readonly IDateTimeProvider _clock;
+    private readonly ILogger<CreateShareLinkCommandHandler> _logger;
 
     public CreateShareLinkCommandHandler(
         IFileEntryRepository files,
         IShareLinkRepository links,
         IUnitOfWork uow,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        ILogger<CreateShareLinkCommandHandler> logger)
     {
         _files = files;
         _links = links;
         _uow = uow;
         _clock = clock;
+        _logger = logger;
     }
 
     public async Task<ShareLinkTokenDto> Handle(CreateShareLinkCommand request, CancellationToken cancellationToken)
@@ -54,6 +58,14 @@ public sealed class CreateShareLinkCommandHandler : IRequestHandler<CreateShareL
 
         await _links.AddAsync(link, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "ShareCreated for owner {OwnerId} file {FileId} shareLink {ShareLinkId} expiresAt {ExpiresAt} maxDownloads {MaxDownloads}",
+            link.OwnerId,
+            link.FileId,
+            link.Id,
+            link.ExpiresAt,
+            link.MaxDownloads);
 
         return new ShareLinkTokenDto
         {

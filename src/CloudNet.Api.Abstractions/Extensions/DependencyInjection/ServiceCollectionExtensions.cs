@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
 
         services.AddCloudNetExceptionHandling();
         services.AddCloudNetRateLimiting(configuration);
+        services.AddCloudNetUserIdEnrichment();
 
         // Application
         services.AddApplication();
@@ -27,6 +28,8 @@ public static class ServiceCollectionExtensions
         // Versioning + Swagger
         services.AddCloudNetApiVersioning();
         services.AddCloudNetSwagger();
+
+        services.AddCorrelationId();
 
         return services;
     }

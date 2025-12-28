@@ -9,6 +9,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace CloudNet.Application.Features.Auth.Commands.Register;
 
@@ -21,6 +22,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
     private readonly IUnitOfWork _uow;
     private readonly IPasswordPolicyService _passwordPolicy;
     private readonly IDateTimeProvider _clock;
+    private readonly ILogger<RegisterCommandHandler> _logger;
 
     public RegisterCommandHandler(
         UserManager<ApplicationUser> userManager,
@@ -29,7 +31,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         IRefreshTokenRepository refreshTokens,
         IUnitOfWork uow,
         IPasswordPolicyService passwordPolicy,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        ILogger<RegisterCommandHandler> logger)
     {
         _userManager = userManager;
         _jwtTokenService = jwtTokenService;
@@ -38,6 +41,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         _uow = uow;
         _passwordPolicy = passwordPolicy;
         _clock = clock;
+        _logger = logger;
     }
 
     public async Task<AuthResponseDto> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -52,6 +56,10 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
+            _logger.LogWarning(
+                "Registration failed for email {Email} username {UserName}",
+                request.Email,
+                request.UserName);
             HandleIdentityErrors(result.Errors);
         }
 
@@ -76,6 +84,8 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Au
 
         await _refreshTokens.AddAsync(refreshEntity, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Registration succeeded for user {UserId}", user.Id);
 
         return new AuthResponseDto(
             new AuthUserDto(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty),
