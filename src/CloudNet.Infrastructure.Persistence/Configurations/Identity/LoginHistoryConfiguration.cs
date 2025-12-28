@@ -16,7 +16,8 @@ public class LoginHistoryConfiguration : IEntityTypeConfiguration<LoginHistory>
         builder.Property(x => x.IpAddress)
             .HasMaxLength(64);
 
-        builder.Property(x => x.Host)
+        builder.Property(x => x.UserAgent)
+            .HasColumnName("Host")
             .HasMaxLength(255);
 
         builder.HasOne(x => x.User)

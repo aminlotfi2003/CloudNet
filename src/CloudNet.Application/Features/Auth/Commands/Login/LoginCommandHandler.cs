@@ -18,6 +18,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IRefreshTokenService _refreshTokenService;
     private readonly IRefreshTokenRepository _refreshTokens;
+    private readonly ILoginHistoryRepository _loginHistory;
     private readonly IUnitOfWork _uow;
     private readonly IDateTimeProvider _clock;
     private readonly ILogger<LoginCommandHandler> _logger;
@@ -28,6 +29,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         IJwtTokenService jwtTokenService,
         IRefreshTokenService refreshTokenService,
         IRefreshTokenRepository refreshTokens,
+        ILoginHistoryRepository loginHistory,
         IUnitOfWork uow,
         IDateTimeProvider clock,
         ILogger<LoginCommandHandler> logger)
@@ -37,6 +39,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         _jwtTokenService = jwtTokenService;
         _refreshTokenService = refreshTokenService;
         _refreshTokens = refreshTokens;
+        _loginHistory = loginHistory;
         _uow = uow;
         _clock = clock;
         _logger = logger;
@@ -54,6 +57,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         if (!user.IsActive)
         {
             _logger.LogWarning("Login blocked for inactive user {UserId}", user.Id);
+            await RecordLoginAttemptAsync(user, success: false, request, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
             throw new ForbiddenException("User is inactive.");
         }
 
@@ -61,18 +66,24 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         if (signIn.IsLockedOut)
         {
             _logger.LogWarning("Login locked out for user {UserId}", user.Id);
+            await RecordLoginAttemptAsync(user, success: false, request, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
             throw new ForbiddenException("User is locked out.");
         }
 
         if (signIn.IsNotAllowed)
         {
             _logger.LogWarning("Login not allowed for user {UserId}", user.Id);
+            await RecordLoginAttemptAsync(user, success: false, request, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
             throw new ForbiddenException("User is not allowed to sign in.");
         }
 
         if (!signIn.Succeeded)
         {
             _logger.LogWarning("Login failed for user {UserId}", user.Id);
+            await RecordLoginAttemptAsync(user, success: false, request, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
             throw new UnauthorizedException("Invalid credentials.");
         }
 
@@ -91,6 +102,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         };
 
         await _refreshTokens.AddAsync(refreshEntity, cancellationToken);
+        await RecordLoginAttemptAsync(user, success: true, request, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Login succeeded for user {UserId}", user.Id);
@@ -110,5 +122,24 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResp
         }
 
         return await _userManager.FindByNameAsync(normalized);
+    }
+
+    private async Task RecordLoginAttemptAsync(
+        ApplicationUser user,
+        bool success,
+        LoginCommand request,
+        CancellationToken cancellationToken)
+    {
+        await _loginHistory.AddAsync(
+            new LoginHistory
+            {
+                UserId = user.Id,
+                OccurredAt = _clock.UtcNow,
+                IpAddress = request.IpAddress,
+                UserAgent = request.UserAgent,
+                Success = success,
+                FailureCountBeforeSuccess = user.AccessFailedCount
+            },
+            cancellationToken);
     }
 }

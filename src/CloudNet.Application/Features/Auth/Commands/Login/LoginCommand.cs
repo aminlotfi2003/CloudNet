@@ -6,4 +6,6 @@ namespace CloudNet.Application.Features.Auth.Commands.Login;
 public sealed record LoginCommand(
     string Identifier,
     string Password,
-    string? Device) : IRequest<AuthResponseDto>;
+    string? Device,
+    string? IpAddress,
+    string? UserAgent) : IRequest<AuthResponseDto>;
